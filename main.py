@@ -1,4 +1,3 @@
-# app resultado de ações
 import math
 import streamlit as st
 import yfinance as yf
@@ -38,7 +37,7 @@ if lista_acoes:
 # filtro de datas
 data_inicial = dados.index.min().to_pydatetime()
 data_final = dados.index.max().to_pydatetime()
-intervalo_data = st.sidebar.slider("Selecione o periodo:", min_value=data_inicial, max_value=data_final, value=(data_inicial, data_final), step=timedelta(days=1))
+intervalo_data = st.sidebar.slider("Selecione o periodo:", min_value=data_inicial, max_value=data_final, value=(data_inicial, data_final), step=timedelta(days=1), format="DD/MM/YY")
 
 dados = dados.loc[intervalo_data[0]:intervalo_data[1]] # filtrando as linhas que correspondem ao intervalo de datas selecionado pelo usuário        
         
@@ -50,13 +49,17 @@ if len(lista_acoes) == 0:
     lista_acoes = list(dados.columns)
 elif len(lista_acoes) == 1:
     dados = dados.rename(columns={"Close": acao_unica})
-elif math.isnan(performance_ativo):
-    texto_performance_ativos = texto_performance_ativos +  f"não foi possiível calcular a performance"    
 
 for acao in lista_acoes:
     performance_ativo = dados[acao].iloc[-1] / dados[acao].iloc[0] - 1 # calculando a performance de quantos % cada ativo subiu ou caiu no período, valor final / valor inicial - 1
     performance_ativo = float(performance_ativo)
-    texto_performance_ativos = texto_performance_ativos + f"  \n{acao}: {performance_ativo:.1%}"
+    
+    if performance_ativo > 0:
+        texto_performance_ativos = texto_performance_ativos + f"  \n{acao}: :green[{performance_ativo:.1%}]"
+    elif performance_ativo < 0:
+        texto_performance_ativos = texto_performance_ativos + f"  \n{acao}: :red[{performance_ativo:.1%}]"
+    elif math.isnan(performance_ativo):
+        texto_performance_ativos = texto_performance_ativos +  f"  \n{acao}: :blue[-]"    
 
 st.write(f"""
 Essa foi a performance de cada ativo no período selecionado:
